@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roastery - Profile</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="login-container">
+        <div class="avatar-container">
+            <div class="avatar" id="avatarInitial">A</div>
+        </div>
+
+        <form class="login-form" id="profileForm">
+            <h2>User Profile</h2>
+            <p>Update your account details and preferences</p>
+
+            <div class="input-group">
+                <input type="text" id="fullname" value="Alex Rivera" required autocomplete="off">
+                <label for="fullname">Full Name</label>
+            </div>
+
+            <div class="input-group">
+                <input type="email" id="email" value="alex@roastery.com" required autocomplete="off">
+                <label for="email">Email Address</label>
+            </div>
+
+            <div class="input-group">
+                <input type="text" id="role" value="Head Roaster" required autocomplete="off">
+                <label for="role">Role / Title</label>
+            </div>
+
+            <div class="button-group">
+                <button type="button" class="btn-secondary" id="dashboardBtn">Dashboard</button>
+                <button type="submit" id="submitBtn">
+                    <span class="btn-text">Save Changes</span>
+                    <div class="spinner" id="spinner"></div>
+                </button>
+            </div>
+
+            <div class="form-actions" style="justify-content: center; margin-top: 25px; margin-bottom: 0;">
+                <a href="login.html" class="forgot-link" style="color: rgba(245, 230, 210, 0.6);">Sign Out</a>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        const fullnameInput = document.getElementById('fullname');
+        const avatarInitial = document.getElementById('avatarInitial');
+
+        fullnameInput.addEventListener('input', function () {
+            const name = this.value.trim();
+            avatarInitial.innerText = name ? name.charAt(0).toUpperCase() : 'U';
+        });
+
+        document.getElementById('dashboardBtn').addEventListener('click', function () {
+            window.location.href = 'dashboard.html';
+        });
+
+        document.getElementById('profileForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const btn = document.getElementById('submitBtn');
+            const btnText = document.querySelector('.btn-text');
+            const spinner = document.getElementById('spinner');
+
+            btnText.style.display = 'none';
+            spinner.style.display = 'block';
+            btn.style.cursor = 'not-allowed';
+
+            setTimeout(() => {
+                btnText.style.display = 'block';
+                btnText.innerText = 'Saved!';
+                spinner.style.display = 'none';
+
+                setTimeout(() => {
+                    btnText.innerText = 'Save Changes';
+                    btn.style.cursor = 'pointer';
+                }, 2000);
+            }, 1000);
+        });
+    </script>
+</body>
+
+</html>
