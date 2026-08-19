@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ember Roasters — Ops Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #17110d;
+    --surface: #211811;
+    --surface-2: #2b2019;
+    --surface-3: #362719;
+    --border: #3a2c1f;
+    --text: #f2e9de;
+    --text-dim: #a89380;
+    --text-faint: #7a6a5a;
+    --accent: #c98a3b;
+    --accent-soft: #7a5427;
+    --accent-2: #8fa377;
+    --danger: #b5523a;
+    --radius: 10px;
+    --font-display: 'Fraunces', Georgia, serif;
+    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
+  }
+
+  *{ box-sizing: border-box; margin:0; padding:0; }
+
+  html{ scroll-behavior: smooth; }
+
+  body{
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    display: flex;
+  }
+
+  ::selection{ background: var(--accent-soft); color: var(--text); }
+
+  a{ color: inherit; text-decoration: none; }
+
+  /* ---------- Sidebar ---------- */
+  .sidebar{
+    width: 240px;
+    flex-shrink: 0;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 28px 18px;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    transition: transform .25s ease;
+    z-index: 100;
+  }
+
+  .brand{
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 0 8px 28px 8px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 24px;
+  }
+  .brand .mark{
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 32% 28%, #e3ab5f, var(--accent) 60%, var(--accent-soft) 100%);
+    flex-shrink: 0;
+  }
+  .brand h1{
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 20px;
+    letter-spacing: .02em;
+  }
+  .brand span{
+    display:block;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: .12em;
+    color: var(--text-faint);
+    text-transform: uppercase;
+  }
+
+  nav.primary-nav{ display: flex; flex-direction: column; gap: 2px; }
+
+  .nav-eyebrow{
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    padding: 16px 10px 8px;
+  }
+  .nav-eyebrow:first-child{ padding-top: 0; }
+
+  .nav-item{
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 9px 10px;
+    border-radius: 8px;
+    font-size: 14px;
+    color: var(--text-dim);
+    transition: background .15s ease, color .15s ease;
+  }
+  .nav-item:hover{ background: var(--surface-2); color: var(--text); }
+  .nav-item.active{
+    background: var(--surface-2);
+    color: var(--accent);
+    box-shadow: inset 3px 0 0 var(--accent);
+  }
+  .nav-item .ico{
+    width: 16px; height: 16px;
+    display: inline-flex;
+    align-items: center; justify-content: center;
+    opacity: .85;
+  }
+
+  .sidebar-footer{
+    margin-top: auto;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-faint);
+  }
+  .sidebar-footer .roast-day{ color: var(--accent-2); }
+
+  /* ---------- Layout shell ---------- */
+  .main{
+    margin-left: 240px;
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .topbar{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px 32px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: rgba(23,17,13,.9);
+    backdrop-filter: blur(6px);
+    z-index: 10;
+  }
+
+  .hamburger{
+    display:none;
+    flex-direction: column;
+    gap: 4px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+  }
+  .hamburger span{ width: 20px; height: 2px; background: var(--text); display:block; }
+
+  .topbar-title h2{
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 600;
+  }
+  .topbar-title p{
+    font-size: 13px;
+    color: var(--text-faint);
+    margin-top: 2px;
+  }
+
+  .topbar-actions{ display: flex; align-items: center; gap: 14px; }
+
+  .search{
+    display:flex;
+    align-items:center;
+    gap: 8px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 12px;
+    font-size: 13px;
+    color: var(--text-faint);
+    width: 220px;
+  }
+  .search input{
+    background: none; border: none; outline: none;
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 13px;
+    width: 100%;
+  }
+  .search input::placeholder{ color: var(--text-faint); }
+
+  .avatar{
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent-2), #5d7048);
+    display: flex; align-items:center; justify-content:center;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 600;
+    color: #14200c;
+    border: 1px solid var(--border);
+  }
+
+  .content{
+    padding: 28px 32px 60px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+
+  /* ---------- Stat cards ---------- */
+  .stat-grid{
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+  .stat-card{
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 18px 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card .label{
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+  }
+  .stat-card .value{
+    font-family: var(--font-display);
+    font-size: 32px;
+    font-weight: 600;
+    margin-top: 8px;
+    letter-spacing: -.01em;
+  }
+  .stat-card .delta{
+    display:inline-flex;
+    align-items:center;
+    gap: 4px;
+    margin-top: 10px;
+    font-size: 12px;
+    font-family: var(--font-mono);
+  }
+  .delta.up{ color: var(--accent-2); }
+  .delta.down{ color: var(--danger); }
+
+  /* ---------- Panels ---------- */
+  .grid-2{
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+
+  .panel{
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 22px;
+  }
+  .panel-head{
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 18px;
+  }
+  .panel-head h3{
+    font-family: var(--font-display);
+    font-size: 17px;
+    font-weight: 600;
+  }
+  .panel-head .sub{
+    font-size: 12px;
+    color: var(--text-faint);
+    font-family: var(--font-mono);
+  }
+
+  /* roast curve chart */
+  .curve-wrap svg{ width: 100%; height: auto; display:block; }
+  .curve-legend{
+    display: flex;
+    gap: 18px;
+    margin-top: 14px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+  .curve-legend .dot{
+    width: 8px; height: 8px; border-radius: 50%;
+    display: inline-block; margin-right: 6px;
+  }
+
+  /* weekly bars */
+  .bars{
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    height: 150px;
+    margin-top: 6px;
+  }
+  .bar-col{
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    height: 100%;
+    justify-content: flex-end;
+  }
+  .bar{
+    width: 100%;
+    max-width: 26px;
+    background: linear-gradient(180deg, var(--accent), var(--accent-soft));
+    border-radius: 4px 4px 0 0;
+    transition: transform .2s ease;
+  }
+  .bar:hover{ transform: scaleY(1.03); transform-origin: bottom; }
+  .bar-col .day{
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-faint);
+  }
+
+  /* orders table */
+  table{ width: 100%; border-collapse: collapse; }
+  thead th{
+    text-align: left;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    padding: 0 10px 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  tbody td{
+    padding: 12px 10px;
+    font-size: 13px;
+    border-bottom: 1px solid var(--border);
+  }
+  tbody tr:last-child td{ border-bottom: none; }
+  tbody tr{ transition: background .15s ease; }
+  tbody tr:hover{ background: var(--surface-2); }
+
+  .pill{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 100px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+  }
+  .pill.roasting{ background: rgba(201,138,59,.14); color: var(--accent); }
+  .pill.shipped{ background: rgba(143,163,119,.14); color: var(--accent-2); }
+  .pill.delayed{ background: rgba(181,82,58,.14); color: var(--danger); }
+  .pill::before{
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  .cust{ color: var(--text-faint); font-size: 12px; }
+
+  /* activity feed */
+  .feed{ display: flex; flex-direction: column; gap: 16px; }
+  .feed-item{ display: flex; gap: 12px; }
+  .feed-dot{
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    margin-top: 6px;
+    flex-shrink: 0;
+  }
+  .feed-item p{ font-size: 13px; line-height: 1.5; }
+  .feed-item time{
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-faint);
+    margin-top: 2px;
+  }
+
+  /* inventory list */
+  .inv-item{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .inv-item:last-child{ border-bottom: none; }
+  .inv-track{
+    width: 90px;
+    height: 5px;
+    background: var(--surface-3);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-left: 10px;
+  }
+  .inv-fill{ height: 100%; background: var(--accent-2); }
+  .inv-fill.low{ background: var(--danger); }
+  .inv-row{ display:flex; align-items:center; }
+
+  footer.page-foot{
+    text-align:center;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-faint);
+    padding: 20px 0 6px;
+  }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 980px){
+    .grid-2{ grid-template-columns: 1fr; }
+    .stat-grid{ grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (max-width: 720px){
+    .sidebar{ transform: translateX(-100%); }
+    .sidebar.open{ transform: translateX(0); box-shadow: 20px 0 40px rgba(0,0,0,.4); }
+    .main{ margin-left: 0; }
+    .hamburger{ display: flex; }
+    .search{ display: none; }
+    .stat-grid{ grid-template-columns: 1fr 1fr; }
+    .topbar{ padding: 16px 18px; }
+    .content{ padding: 20px 18px 40px; }
+  }
+
+  @media (max-width: 460px){
+    .stat-grid{ grid-template-columns: 1fr; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ transition: none !important; scroll-behavior: auto !important; }
+  }
+
+  :focus-visible{
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+</style>
+</head>
+<body>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <span class="mark"></span>
+      <div>
+        <h1>Ember</h1>
+        <span>Roastery Ops</span>
+      </div>
+    </div>
+
+    <nav class="primary-nav">
+      <div class="nav-eyebrow">Monitor</div>
+      <a class="nav-item active" href="#"><span class="ico">◆</span> Overview</a>
+      <a class="nav-item" href="#"><span class="ico">◇</span> Roast Batches</a>
+      <a class="nav-item" href="#"><span class="ico">◇</span> Orders</a>
+
+      <div class="nav-eyebrow">Manage</div>
+      <a class="nav-item" href="#"><span class="ico">◇</span> Inventory</a>
+      <a class="nav-item" href="#"><span class="ico">◇</span> Customers</a>
+      <a class="nav-item" href="#"><span class="ico">◇</span> Suppliers</a>
+
+      <div class="nav-eyebrow">Account</div>
+      <a class="nav-item" href="#"><span class="ico">◇</span> Settings</a>
+      <a class="nav-item" href="login.html"><span class="ico">◇</span> Log out</a>
+    </nav>
+
+    <div class="sidebar-footer">
+      Today's roast <span class="roast-day">Ethiopia Yirgacheffe — Batch 114</span>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div style="display:flex; align-items:center; gap:14px;">
+        <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+          <span></span><span></span><span></span>
+        </button>
+        <div class="topbar-title">
+          <h2>Overview</h2>
+          <p id="todayLabel">Loading date…</p>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <div class="search">
+          <span>⌕</span>
+          <input type="text" placeholder="Search orders, batches…">
+        </div>
+        <div class="avatar">MK</div>
+      </div>
+    </header>
+
+    <main class="content">
+
+      <section class="stat-grid">
+        <div class="stat-card">
+          <div class="label">Bags Roasted (wk)</div>
+          <div class="value">1,284</div>
+          <div class="delta up">▲ 12.4% vs last week</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Open Orders</div>
+          <div class="value">47</div>
+          <div class="delta up">▲ 6 new today</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Green Coffee Stock</div>
+          <div class="value">3.2t</div>
+          <div class="delta down">▼ 8.1% — reorder soon</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Avg. Cup Score</div>
+          <div class="value">86.5</div>
+          <div class="delta up">▲ 0.7 vs last batch</div>
+        </div>
+      </section>
+
+      <section class="grid-2">
+        <div class="panel curve-wrap">
+          <div class="panel-head">
+            <div>
+              <h3>Roast Curve — Batch 114</h3>
+              <div class="sub">Bean temp over time, first crack marked</div>
+            </div>
+            <div class="sub">11:42 elapsed</div>
+          </div>
+
+          <svg id="roastCurve" viewBox="0 0 560 200" preserveAspectRatio="none">
+            <!-- grid lines -->
+            <g stroke="#3a2c1f" stroke-width="1">
+              <line x1="0" y1="40" x2="560" y2="40"/>
+              <line x1="0" y1="90" x2="560" y2="90"/>
+              <line x1="0" y1="140" x2="560" y2="140"/>
+              <line x1="0" y1="190" x2="560" y2="190"/>
+            </g>
+            <!-- bean temp curve -->
+            <polyline id="curveLine" fill="none" stroke="#c98a3b" stroke-width="2.5"
+              points="0,190 60,178 120,158 180,132 240,104 300,78 360,58 420,44 480,36 540,30 560,28" />
+            <!-- first crack marker -->
+            <line x1="360" y1="0" x2="360" y2="200" stroke="#8fa377" stroke-width="1" stroke-dasharray="4 4"/>
+            <circle cx="360" cy="58" r="4" fill="#8fa377"/>
+          </svg>
+
+          <div class="curve-legend">
+            <span><span class="dot" style="background:#c98a3b"></span>Bean temperature</span>
+            <span><span class="dot" style="background:#8fa377"></span>First crack — 6:00</span>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <h3>Recent Activity</h3>
+              <div class="sub">Live floor updates</div>
+            </div>
+          </div>
+          <div class="feed">
+            <div class="feed-item">
+              <span class="feed-dot"></span>
+              <div>
+                <p>Batch 114 (Yirgacheffe) hit first crack at 6:00.</p>
+                <time>2 min ago</time>
+              </div>
+            </div>
+            <div class="feed-item">
+              <span class="feed-dot" style="background:#8fa377"></span>
+              <div>
+                <p>Order #4482 for Maple &amp; Co. marked as shipped.</p>
+                <time>18 min ago</time>
+              </div>
+            </div>
+            <div class="feed-item">
+              <span class="feed-dot" style="background:#b5523a"></span>
+              <div>
+                <p>Sumatra Mandheling green stock fell below 200kg.</p>
+                <time>41 min ago</time>
+              </div>
+            </div>
+            <div class="feed-item">
+              <span class="feed-dot"></span>
+              <div>
+                <p>New wholesale account approved — Fernwood Café.</p>
+                <time>1 hr ago</time>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="grid-2">
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <h3>Recent Orders</h3>
+              <div class="sub">Last 5 updated</div>
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr><th>Order</th><th>Customer</th><th>Roast</th><th>Status</th><th>Total</th></tr>
+            </thead>
+            <tbody id="ordersBody">
+              <!-- rows injected by JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <h3>Weekly Output</h3>
+              <div class="sub">Bags roasted, Mon–Sun</div>
+            </div>
+          </div>
+          <div class="bars" id="barsChart"></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <div>
+            <h3>Green Coffee Inventory</h3>
+            <div class="sub">Stock level relative to par</div>
+          </div>
+        </div>
+        <div id="inventoryList"></div>
+      </section>
+
+    </main>
+
+    <footer class="page-foot">Ember Roasters Ops Dashboard — internal use only</footer>
+  </div>
+
+<script>
+  // ---------- Live date ----------
+  document.getElementById('todayLabel').textContent =
+    new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+  // ---------- Mobile sidebar toggle ----------
+  const sidebar = document.getElementById('sidebar');
+  const hamburger = document.getElementById('hamburger');
+  hamburger.addEventListener('click', () => sidebar.classList.toggle('open'));
+  document.addEventListener('click', (e) => {
+    if (window.innerWidth <= 720 && sidebar.classList.contains('open')
+        && !sidebar.contains(e.target) && e.target !== hamburger) {
+      sidebar.classList.remove('open');
+    }
+  });
+
+  // ---------- Nav active state ----------
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', function (e) {
+      if (this.getAttribute('href') === 'login.html') return; // let real navigation happen
+      e.preventDefault();
+      document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+      this.classList.add('active');
+      document.querySelector('.topbar-title h2').textContent = this.textContent.trim();
+    });
+  });
+
+  // ---------- Weekly bar chart (randomized "on your own" data) ----------
+  const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const barsWrap = document.getElementById('barsChart');
+  const weekData = days.map(() => Math.floor(120 + Math.random() * 180));
+  const maxVal = Math.max(...weekData);
+
+  weekData.forEach((val, i) => {
+    const col = document.createElement('div');
+    col.className = 'bar-col';
+    const heightPct = Math.round((val / maxVal) * 100);
+    col.innerHTML = `
+      <div class="bar" style="height:${heightPct}%" title="${val} bags"></div>
+      <span class="day">${days[i]}</span>
+    `;
+    barsWrap.appendChild(col);
+  });
+
+  // ---------- Orders table ----------
+  const orders = [
+    { id: '#4491', customer: 'Fernwood Café', roast: 'Yirgacheffe', status: 'roasting', total: '$412.00' },
+    { id: '#4490', customer: 'Maple & Co.',   roast: 'Sumatra',     status: 'shipped',  total: '$1,120.00' },
+    { id: '#4489', customer: 'Dune Coffee Bar', roast: 'Colombia Huila', status: 'delayed', total: '$268.50' },
+    { id: '#4488', customer: 'Northline Roasters', roast: 'Kenya AA', status: 'shipped', total: '$860.00' },
+    { id: '#4487', customer: 'Wren & Fig',     roast: 'Guatemala Antigua', status: 'roasting', total: '$540.75' },
+  ];
+
+  const ordersBody = document.getElementById('ordersBody');
+  orders.forEach(o => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${o.id}</td>
+      <td>${o.customer}<div class="cust">Wholesale</div></td>
+      <td>${o.roast}</td>
+      <td><span class="pill ${o.status}">${o.status}</span></td>
+      <td>${o.total}</td>
+    `;
+    ordersBody.appendChild(tr);
+  });
+
+  // ---------- Inventory ----------
+  const inventory = [
+    { name: 'Ethiopia Yirgacheffe', pct: 74 },
+    { name: 'Sumatra Mandheling',   pct: 18, low: true },
+    { name: 'Colombia Huila',       pct: 55 },
+    { name: 'Kenya AA',             pct: 62 },
+    { name: 'Guatemala Antigua',    pct: 41 },
+  ];
+
+  const invList = document.getElementById('inventoryList');
+  inventory.forEach(item => {
+    const row = document.createElement('div');
+    row.className = 'inv-item';
+    row.innerHTML = `
+      <span>${item.name}</span>
+      <span class="inv-row">${item.pct}%
+        <span class="inv-track"><span class="inv-fill ${item.low ? 'low' : ''}" style="width:${item.pct}%"></span></span>
+      </span>
+    `;
+    invList.appendChild(row);
+  });
+</script>
+
+</body>
+</html>
