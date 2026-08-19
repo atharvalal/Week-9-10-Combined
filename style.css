@@ -1,0 +1,179 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Dark Coffee & Ember Animated Gradient */
+    background: linear-gradient(135deg, #090503, #1a0f0a, #2c1408, #4a1c0d, #1a0903);
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
+}
+
+@keyframes gradientBG {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.login-container {
+    /* Dark Roast Glassmorphism */
+    background: rgba(18, 12, 8, 0.7);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(230, 126, 34, 0.25);
+    border-radius: 20px;
+    padding: 40px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7), 0 0 25px rgba(211, 84, 0, 0.15);
+    /* Entrance Animation */
+    animation: slideUp 0.6s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.login-form h2 {
+    color: #fff8f0;
+    font-size: 28px;
+    margin-bottom: 5px;
+    text-align: center;
+    letter-spacing: 0.5px;
+}
+
+.login-form p {
+    color: rgba(245, 230, 210, 0.7);
+    font-size: 14px;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.input-group {
+    position: relative;
+    margin-bottom: 25px;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 10px 0;
+    font-size: 16px;
+    color: #fff8f0;
+    border: none;
+    border-bottom: 2px solid rgba(230, 126, 34, 0.3);
+    outline: none;
+    background: transparent;
+    transition: 0.3s;
+}
+
+.input-group label {
+    position: absolute;
+    top: 10px;
+    left: 0;
+    font-size: 16px;
+    color: rgba(245, 230, 210, 0.5);
+    pointer-events: none;
+    transition: 0.3s ease all;
+}
+
+/* Floating Label Animation with Ember Accent */
+.input-group input:focus~label,
+.input-group input:valid~label {
+    top: -20px;
+    font-size: 12px;
+    color: #ff9f43;
+}
+
+.input-group input:focus {
+    border-bottom: 2px solid #e67e22;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    font-size: 13px;
+    color: rgba(245, 230, 210, 0.7);
+}
+
+.remember input {
+    accent-color: #e67e22;
+}
+
+.forgot-link {
+    color: #ff9f43;
+    text-decoration: none;
+    transition: 0.3s;
+}
+
+.forgot-link:hover {
+    color: #ffbe76;
+    text-shadow: 0 0 8px rgba(230, 126, 34, 0.6);
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, #e67e22, #d35400);
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    letter-spacing: 0.5px;
+}
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(230, 126, 34, 0.5);
+    background: linear-gradient(135deg, #f39c12, #e67e22);
+}
+
+/* Loading Spinner */
+.spinner {
+    display: none;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #ffffff;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
